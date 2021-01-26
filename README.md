@@ -1,1 +1,13 @@
 # lambda-sql-send
+#### Setup the environment
+> Install Node 12
+- curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+- sudo apt install nodejs
+
+> Update NPM
+- npm install npm@latest -g
+
+> configure serverless
+- sudo npm install -g serverless
+> Deploy
+- serverless deploy

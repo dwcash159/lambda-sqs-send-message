@@ -8,12 +8,18 @@ const sqs = new AWS.SQS({apiVersion: "2012-11-05"});
 // Create the document client interface for DynamoDB
 var documentClient = new AWS.DynamoDB.DocumentClient();
 
-module.exports.helloWorld = (event, context, callback) => {
+module.exports.communications = (event, context, callback) => {
 
-  var json = JSON.parse(event.body);
+  var communications = JSON.parse(event.body);
+
+  var sqsPayload = {
+    type: communications.type,
+    system: communications.system,
+    description: communications.description
+  };
 
   var sqsParams = {
-    MessageBody: JSON.stringify(json),
+    MessageBody: JSON.stringify(sqsPayload),
     QueueUrl: 'https://sqs.us-east-1.amazonaws.com/615027074482/aws-communications-queue'
   };
 
@@ -23,42 +29,38 @@ module.exports.helloWorld = (event, context, callback) => {
       'Access-Control-Allow-Origin': '*', // Required for CORS support to work
     },
     body: JSON.stringify({
-      message: json,
+      message: { type: communications.type, system: communications.system, description: communications.description },
       input: event,
     }),
   };
 
-  var dynamoDbPayload = {
+  var dPayload = {
     TableName: "communications-sqs-db",
-    Item: json
+    Item: communications
   };
 
-
-
-  const sqsdata = sqs.sendMessage(sqsParams, function(err, data) {
-    var body = JSON.parse(response.body);
-    if (err) {
-      console.log('ERR', err);
-
-      response.statusCode = 500;
-      response.body = JSON.stringify(body);
-      callback(null, response);
-    }
-    console.log(data);
-    body.messageId = data.MessageId;
-    response.body = JSON.stringify(body);
-    dynamoDbPayload.Item.messageId = data.MessageId;
-
-    documentClient.put(params, function(err, data) {
+  var insertDynamoDB = function (payload) {
+    documentClient.put(payload, function(err, data) {
       if (err) {
         response.statusCode = 500;
-        response.body = JSON.stringify(body);
+        console.log('ERR', err);
         callback(null, response);
       } else {
-        console.log("Succeeded adding communicatiion");
+        console.log("Succeeded adding communication");
+        callback(null, response);
       }
     });
+  };
 
-    callback(null, response);
+  const sqsData = sqs.sendMessage(sqsParams, function(err, data) {
+
+    if (err) {
+      console.log('ERR', err);
+      response.statusCode = 500;
+      callback(null, response);
+    }
+
+    dPayload.Item.messageId = data.MessageId;
+    insertDynamoDB(dPayload);
   });
 };
