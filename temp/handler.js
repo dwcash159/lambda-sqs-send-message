@@ -1,29 +1,29 @@
 'use strict';
 
 const AWS = require('aws-sdk');
-AWS.config.update({region: "us-east-1"});
-
 const sqs = new AWS.SQS({apiVersion: "2012-11-05"});
+const documentClient = new AWS.DynamoDB.DocumentClient();
+const sqsQueueUrl = process.env.SQS_QUEUE_URL;
+const dynamoDbTable = process.env.DYNAMODB_TABLE;
 
-// Create the document client interface for DynamoDB
-var documentClient = new AWS.DynamoDB.DocumentClient();
+AWS.config.update({region: "us-east-1"});
 
 module.exports.communications = (event, context, callback) => {
 
-  var communications = JSON.parse(event.body);
+  let communications = JSON.parse(event.body);
 
-  var sqsPayload = {
+  let sqsPayload = {
     type: communications.type,
     system: communications.system,
     description: communications.description
   };
 
-  var sqsParams = {
+  let sqsParams = {
     MessageBody: JSON.stringify(sqsPayload),
-    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/615027074482/aws-communications-queue'
+    QueueUrl: sqsQueueUrl
   };
 
-  var response = {
+  let response = {
     statusCode: 200,
     headers: {
       'Access-Control-Allow-Origin': '*', // Required for CORS support to work
@@ -34,12 +34,12 @@ module.exports.communications = (event, context, callback) => {
     }),
   };
 
-  var dPayload = {
-    TableName: "communications-sqs-db",
+  let dPayload = {
+    TableName: dynamoDbTable,
     Item: communications
   };
 
-  var insertDynamoDB = function (payload) {
+  let insertDynamoDB = function (payload) {
     documentClient.put(payload, function(err, data) {
       if (err) {
         response.statusCode = 500;

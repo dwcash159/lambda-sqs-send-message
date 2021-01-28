@@ -9,16 +9,49 @@ service: lambda-sql-send
 
 frameworkVersion: '2'
 
+#plugins:
+#  - serverless-webpack
+#  - serverless-offline #serverless-offline needs to be last in the list
+
+#custom:
+#  TABLES:
+#    BOOKS: 'books'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  environment:
+    SQS_QUEUE_URL:
+      prod: 'https://sqs.us-east-1.amazonaws.com/615027074482/aws-communications-queue'
+      dev:  'https://sqs.us-east-1.amazonaws.com/615027074482/aws-communications-queue'
+    DYNAMODB_TABLE:
+      prod: 'communications-sqs-db'
+      dev:  'communications-sqs-db'
+
 # The `provider` block defines where your service will be deployed
 provider:
   name: aws
+  stage: dev
   runtime: nodejs12.x
+  region: us-east-1
+  environment:
+    SQS_QUEUE_URL: ${self:custom.environment.SQS_QUEUE_URL.${self:custom.stage}}
+    DYNAMODB_TABLE: ${self:custom.environment.DYNAMODB_TABLE.${self:custom.stage}}
 
 # The `functions` block defines what code to deploy
+#functions:
+#  helloWorld:
+#    handler: handler.communications
+#    # The `events` block defines how to trigger the handler.helloWorld code
+#    events:
+#      - http:
+#          path: communications
+#          method: post
+#          cors: true
+
 functions:
-  helloWorld:
-    handler: handler.communications
-    # The `events` block defines how to trigger the handler.helloWorld code
+  communications:
+    handler: src/handler.communications
+#    name: ${self:provider.stage}-${self:service}-communications
     events:
       - http:
           path: communications

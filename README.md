@@ -10,4 +10,7 @@
 > configure serverless
 - sudo npm install -g serverless
 > Deploy
-- serverless deploy
+- Deploy to development
+    - serverless deploy
+- Deploy to production
+    - serverless deploy --stage prod 
