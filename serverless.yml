@@ -24,8 +24,8 @@ custom:
       prod: 'https://sqs.us-east-1.amazonaws.com/615027074482/aws-communications-queue'
       dev:  'https://sqs.us-east-1.amazonaws.com/615027074482/aws-communications-queue'
     DYNAMODB_TABLE:
-      prod: 'communications-sqs-db'
-      dev:  'communications-sqs-db'
+      prod: 'communications-sqs-dbx'
+      dev:  'communications-sqs-dbx'
 
 # The `provider` block defines where your service will be deployed
 provider:

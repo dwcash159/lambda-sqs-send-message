@@ -1,0 +1,7 @@
+{
+  "name": "lambda-sqs-send-message",
+  "description": "Send message to SQS and payload to DynamoDb",
+  "version": "1.0.0",
+  "author": "David Cash <dcash@kcm.org>",
+  "license": "MIT"
+}
